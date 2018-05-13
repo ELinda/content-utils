@@ -103,6 +103,14 @@ def prefix_all(value, LL):
     return [[value] + L for L in LL]
 
 
+def split_into_subarrays_of_max_len(arr, max_len=44100):
+    """ return a list of arrays so that each array has a max-length of max_len
+    and as many earlier sub-lists as possible have length max_len and the last one has
+    the remaining content (tail) of L and np.concatenate(the return value) is L
+    """
+    return np.split(arr, np.arange(max_len, len(arr), max_len))
+
+
 def all_permutations(lst):
     """
     this is copied from stack overflow and it returns

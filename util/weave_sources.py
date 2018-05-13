@@ -7,15 +7,8 @@ from util.librosa_based import load_data_with_sr
 from util.article_effects import get_non_quiet_segments
 from util.article_effects import write_to_same_directory_as_input
 from util.constants import DEFAULT_SAMPLE_RATE
+from util.np_array import split_into_subarrays_of_max_len
 
-
-
-def split_into_subarrays_of_max_len(arr, max_len=44100):
-    """ return a list of arrays so that each array has a max-length of max_len
-    and as many earlier sub-lists as possible have length max_len and the last one has
-    the remaining content (tail) of L and np.concatenate(the return value) is L
-    """
-    return np.split(arr, np.arange(max_len, len(arr), max_len))
 
 def split_all_sublists_over_max_len(L, max_len=DEFAULT_SAMPLE_RATE, debug=False):
     """ return copy of input list L (a list of arrays), with replacement
@@ -34,6 +27,7 @@ def split_all_sublists_over_max_len(L, max_len=DEFAULT_SAMPLE_RATE, debug=False)
                 print('replaced one array with %s at index %s' % (len(subarrays), i))
     return L_copy
 
+
 def write_or_return_merged_data(files, write=True):
     """
     load data from all the files and weave them, trying to set breakpoints at silent eras
@@ -43,7 +37,7 @@ def write_or_return_merged_data(files, write=True):
     # a list of arrays of maximum length max_len, so that their concat is the original
     # one list of lists per source
     significant_segs = [split_all_sublists_over_max_len(get_non_quiet_segments(data),
-                                                        max_len=int(DEFAULT_SAMPLE_RATE/2))
+                                                        max_len=int(DEFAULT_SAMPLE_RATE / 2))
                         for name, data in article_names_datas]
     # itertools.zip_longest to get a list of tuples, each comprised of one segment per source
     # convert the tuples of arrays to lists of arrays, so that any bottom-level Nones
@@ -62,6 +56,7 @@ def write_or_return_merged_data(files, write=True):
     else:
         return woven
 
+
 if __name__ == "__main__":
     description = 'produce woven version of input files'
     parser = argparse.ArgumentParser(description=description)
@@ -69,8 +64,3 @@ if __name__ == "__main__":
                         help='input files')
     files = parser.parse_args().files
     write_or_return_merged_data(files, write=True)
-    
-
-    
-
-

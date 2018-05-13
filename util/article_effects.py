@@ -14,6 +14,7 @@ from util import np_array as na
 def sig_handler(signum, frame):
     print('Seg Fault %s' % signum)
 
+
 signal.signal(signal.SIGSEGV, sig_handler)
 
 

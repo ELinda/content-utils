@@ -3,6 +3,7 @@ from scipy import signal
 import matplotlib.pyplot as plt
 
 from util.constants import DEFAULT_SAMPLE_RATE
+from util.np_array import split_into_subarrays_of_max_len
 
 
 def plot(x, y):
@@ -31,36 +32,43 @@ def spectrum(sig, t_incr=None, max_f_buckets=None):
     f_buckets = max_f_buckets or int(sig.size)
     print('computing spectrum for %s buckets for %s points' % (f_buckets, int(sig.size)))
     f = rfftfreq(f_buckets, d=t_incr)
-    y = rfft(sig,f_buckets)
+    y = rfft(sig, f_buckets)
     y_norm = np.abs(y) / f_buckets * 2
 
     return f, y_norm
 
-def get_spec(y, sample_rate=DEFAULT_SAMPLE_RATE):
+
+def plot_spectrum_by_segment(sig, t_incr=None, max_f_buckets=None,
+                             max_f=None, max_len=DEFAULT_SAMPLE_RATE):
+    """
+    break into chunks of max_len and compute and plot spectrum for each
+    """
+    sig_segs = split_into_subarrays_of_max_len(sig, max_len)
+    for sig_seg in sig_segs:
+        f, y_norm = spectrum(sig_seg, t_incr=None, max_f_buckets=None)
+        max_f_index = np.argmax(f > max_f) if max_f else len(f)
+        print(sig)
+        plt.plot(f[:max_f_index], y_norm[:max_f_index])
+        plt.grid(True)
+        plt.show()
+
+
+def plot_spec(y, sample_rate=DEFAULT_SAMPLE_RATE, max_freq=None, suppress_plot=False, void=False):
     f, t, Sxx = signal.spectrogram(y, sample_rate)
-    return f, t, Sxx
-
-
-def plot_spec(y, sample_rate=DEFAULT_SAMPLE_RATE, max_freq=None):
-    f, t, Sxx = signal.spectrogram(y, sample_rate)
-    max_freq_index = np.argmax(f>max_freq) if max_freq else len(f)
-    plt.pcolormesh(t, f[0:max_freq_index], Sxx[0:max_freq_index,:])
-    plt.ylabel('f')
-    plt.xlabel('t')
-    plt.colorbar()
-    plt.show()
-    return f, t, Sxx
-
-
-def get_f_y():
-    f = rfftfreq(int(sig.size/2), d=t[1]-t[0])
-    y = rfft(sig,int(sig.size/2))
-    return f, y 
+    if not suppress_plot:
+        max_freq_index = np.argmax(f > max_freq) if max_freq else len(f)
+        plt.pcolormesh(t, f[0:max_freq_index], Sxx[0:max_freq_index, :])
+        plt.ylabel('f')
+        plt.xlabel('t')
+        plt.colorbar()
+        plt.show()
+    if not void:
+        return f, t, Sxx
 
 
 def plot_dft(y, max_freq=None):
     A_rfft = np.fft.rfft(y)
-    max_f_index = int(np.size(y)/2) + 1
+    max_f_index = int(np.size(y) / 2) + 1
     f_rfft = range(max_f_index)
     max_freq = np.size(f_rfft) if max_freq is None else max_freq
     f = f_rfft[0:max_freq]

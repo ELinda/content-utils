@@ -11,18 +11,40 @@ def plot(x, y):
     plt.show()
 
 
-def plot_and_play(y, play=True):
+def first_index(arr, thres):
+    # return first index passing a thres
+    return np.argmax(arr >= thres) if thres and thres < arr[-1] else len(arr)
+
+
+def plot_colormesh_corner(t, y, values, max_t=10, max_y=1500):
+    """
+    plot a heatmap where the colors are designated by "values"
+    "duration" is the nunber of seconds represented on the x axis
+    """
+    max_y_index = first_index(y, max_y)
+    max_t_index = first_index(t, max_t)
+    plt.figure(figsize=(20, 4))
+    plt.pcolormesh(t[:max_t_index], y[:max_y_index], values[:max_y_index, :max_t_index])
+    plt.ylabel('y')
+    plt.xlabel('t')
+    plt.colorbar()
+    plt.show()
+
+
+def plot_and_play(y, sr=DEFAULT_SAMPLE_RATE, play=True, plot=True, shape=None):
     """
     y, any list-like object
     """
-    num_points = np.size(y)
-    num_secs = num_points / DEFAULT_SAMPLE_RATE
-    x = np.linspace(0, num_secs, num_points)
-    plt.plot(x, y)
-    plt.show()
+    if plot:
+        num_points = np.size(y)
+        num_secs = num_points / sr
+        x = np.linspace(0, num_secs, num_points)
+        plt.figure(figsize=shape or (max(num_secs, 20), 4))
+        plt.plot(x, y)
+        plt.show()
     if play:
         import sounddevice as sd
-        sd.play(y, DEFAULT_SAMPLE_RATE)
+        sd.play(y, sr)
 
 
 def spectrum(sig, t_incr=None, max_f_buckets=None):
@@ -47,7 +69,6 @@ def plot_spectrum_by_segment(sig, t_incr=None, max_f_buckets=None,
     for sig_seg in sig_segs:
         f, y_norm = spectrum(sig_seg, t_incr=None, max_f_buckets=None)
         max_f_index = np.argmax(f > max_f) if max_f else len(f)
-        print(sig)
         plt.plot(f[:max_f_index], y_norm[:max_f_index])
         plt.grid(True)
         plt.show()
@@ -56,12 +77,7 @@ def plot_spectrum_by_segment(sig, t_incr=None, max_f_buckets=None,
 def plot_spec(y, sample_rate=DEFAULT_SAMPLE_RATE, max_freq=None, suppress_plot=False, void=False):
     f, t, Sxx = signal.spectrogram(y, sample_rate)
     if not suppress_plot:
-        max_freq_index = np.argmax(f > max_freq) if max_freq else len(f)
-        plt.pcolormesh(t, f[0:max_freq_index], Sxx[0:max_freq_index, :])
-        plt.ylabel('f')
-        plt.xlabel('t')
-        plt.colorbar()
-        plt.show()
+        plot_colormesh_corner(t, f, Sxx, max_t=None, max_y=max_freq)
     if not void:
         return f, t, Sxx
 

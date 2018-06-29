@@ -1,11 +1,9 @@
 import numpy as np
-import os
-import datetime
 import librosa
-import soundfile as sf
 import signal
 import argparse
 
+from util.io import write as write_to_same_directory_as_input
 from util.constants import DEFAULT_SAMPLE_RATE
 from util import librosa_based as lb
 from util import np_array as na
@@ -44,25 +42,6 @@ def get_non_quiet_segments(data, window_secs=0.25, slide_secs=0.125, threshold=0
             for i1, i2 in na.merge_adjacent(np.where(avgs > threshold)[0])]
 
 
-def write_to_same_directory_as_input(full_path_and_file, data, new_suffix=None, form=None,
-                                     sr=DEFAULT_SAMPLE_RATE):
-    """ write a file to the same directory as the input file, of the form
-    /old/path/old_file_name_new_suffix.form"""
-    directory = os.path.dirname(full_path_and_file)
-    file_parts = full_path_and_file.split('.')
-    if not new_suffix:
-        new_suffix = datetime.datetime.today().strftime('%Y%m%d')
-    file_prefix = ''.join(file_parts[:-1]) + '_' + new_suffix
-    # keep same extension if no format was specified
-    file_ext = file_parts[-1] if not form or form.lower() == file_parts[-1] else form.lower()
-    new_file_name = os.path.join(directory, file_prefix + '.' + file_ext)
-    print('Intent to output %s points to %s' % (len(data), new_file_name))
-    if form:
-        sf.write(new_file_name, data, sr, format=form)
-    else:
-        sf.write(new_file_name, data, sr)
-
-
 def get_intervals_from_dividers(divide_pts, last_sec):
     """ get an list of adjacent time intervals separated at the
     points specified by divide_pts
@@ -80,10 +59,9 @@ def get_stuttered_based_on_onsets(data, onsets, every=2,
     onsets are treated as the beginnings of some events (change in freq/amp, user defined)
     insert "repeat" repetitions of each data[index] every "every" indexes
     """
-    last_sec = np.size(data)/sr
+    last_sec = np.size(data) / sr
     between_onsets = get_intervals_from_dividers(onsets, last_sec)
     for i in np.flip(np.arange(0, len(between_onsets), every), 0):
-        to_insert = between_onsets[i]
         for _ in range(repeat()):
             between_onsets = np.insert(between_onsets, i, between_onsets[i], axis=0)
 

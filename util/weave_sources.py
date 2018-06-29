@@ -5,7 +5,7 @@ import numpy as np
 
 from util.librosa_based import load_data_with_sr
 from util.article_effects import get_non_quiet_segments
-from util.article_effects import write_to_same_directory_as_input
+from util.io import write as write_to_same_directory_as_input
 from util.constants import DEFAULT_SAMPLE_RATE
 from util.np_array import split_into_subarrays_of_max_len
 
@@ -49,7 +49,7 @@ def write_or_return_merged_data(files, write=True):
     if write:
         new_directory = os.path.dirname(files[0])
         file_prefix = '_'.join(['.'.join(file.split('.')[:-1]) for file in files])
-        full_file_name = file_prefix + '.wav'      # other codecs are not always working
+        full_file_name = os.path.basename(file_prefix) + '.wav'  # other codecs not always working
         file_pattern = os.path.join(new_directory, full_file_name)
         print('output to time-stamped: %s' % (file_pattern))
         write_to_same_directory_as_input(os.path.join(new_directory, full_file_name), woven)

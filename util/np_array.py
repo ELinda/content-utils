@@ -13,9 +13,6 @@ def set_segments_to_value(arr, segments, value=0):
 
 
 def overlay_decaying(data, num_times=5, decay_ratio=.8, delay_gap=500):
-    max_size = data.size
-    print(max_size)
-
     def get_padded(before, middle, after):
         return np.concatenate([np.zeros(before), middle, np.zeros(after)])
 

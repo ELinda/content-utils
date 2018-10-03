@@ -35,10 +35,10 @@ def resample_to_default(data, orig_sr):
     return librosa.core.resample(data, orig_sr, DEFAULT_SAMPLE_RATE)
 
 
-def shift(x, steps, sample_rate=DEFAULT_SAMPLE_RATE, steps_per_freq_double=24):
+def shift(x, steps, sample_rate=DEFAULT_SAMPLE_RATE, steps_per_octave=12):
     return librosa.effects.pitch_shift(x, sr=sample_rate,
                                        n_steps=steps,
-                                       bins_per_octave=steps_per_freq_double)
+                                       bins_per_octave=steps_per_octave)
 
 
 def stretch(x, factor):

@@ -74,8 +74,15 @@ def plot_spectrum_by_segment(sig, t_incr=None, max_f_buckets=None,
         plt.show()
 
 
-def plot_spec(y, sample_rate=DEFAULT_SAMPLE_RATE, max_freq=None, suppress_plot=False, void=False):
+def plot_spec(y, sample_rate=DEFAULT_SAMPLE_RATE, max_freq=None,
+              suppress_plot=False, void=False, take_log=True):
+    """
+    plot spectrogram (frequency on x axis and log of frequency presence on y axis)
+    e.g. plot_spec(data, max_freq=2000)
+    """
     f, t, Sxx = signal.spectrogram(y, sample_rate)
+    if take_log:
+        Sxx = np.log(Sxx + 0.0001)   # add small number to avoid divide-by-0
     if not suppress_plot:
         plot_colormesh_corner(t, f, Sxx, max_t=None, max_y=max_freq)
     if not void:
